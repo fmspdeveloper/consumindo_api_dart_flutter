@@ -2,6 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+class Endereco {
+  final String logradouro;
+  final String bairro;
+  final String localidade;
+  final String uf;
+
+  Endereco({
+    required this.logradouro,
+    required this.bairro,
+    required this.localidade,
+    required this.uf,
+  });
+}
+
 class paginaInicio extends StatefulWidget {
   const paginaInicio({super.key});
 
@@ -12,6 +26,8 @@ class paginaInicio extends StatefulWidget {
 class _paginaInicioState extends State<paginaInicio> {
   TextEditingController cepController = TextEditingController();
   String resultado = "";
+  Endereco endereco =
+      Endereco(logradouro: "", bairro: "", localidade: "", uf: "");
 
   _recuperarCep() async {
     String cep = cepController.text;
@@ -23,20 +39,18 @@ class _paginaInicioState extends State<paginaInicio> {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);
-      String logradouro = data['logradouro'];
-      String bairro = data['bairro'];
-      String localidade = data['localidade'];
-      String uf = data['uf'];
 
       setState(() {
-        resultado = "CEP: $cep\n"
-            "Logradouro: $logradouro\n"
-            "Bairro: $bairro\n"
-            "Localidade: $localidade\n"
-            "UF: $uf";
+        endereco = Endereco(
+          logradouro: data['logradouro'] ?? "",
+          bairro: data['bairro'] ?? "",
+          localidade: data['localidade'] ?? "",
+          uf: data['uf'] ?? "",
+        );
       });
     } else {
       setState(() {
+        endereco = Endereco(logradouro: "", bairro: "", localidade: "", uf: "");
         resultado = "CEP Não encontrado";
       });
     }
@@ -46,6 +60,7 @@ class _paginaInicioState extends State<paginaInicio> {
     setState(() {
       cepController.text = "";
       resultado = "";
+      endereco = Endereco(logradouro: "", bairro: "", localidade: "", uf: "");
     });
   }
 
@@ -65,6 +80,7 @@ class _paginaInicioState extends State<paginaInicio> {
         child: Padding(
             padding: EdgeInsets.all(40),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: cepController,
@@ -73,6 +89,10 @@ class _paginaInicioState extends State<paginaInicio> {
                 SizedBox(
                   height: 20,
                 ),
+                Text("Logradouro: ${endereco.logradouro}"),
+                Text("Bairro: ${endereco.bairro}"),
+                Text("Localidade: ${endereco.localidade}"),
+                Text("uf: ${endereco.uf}"),
                 ElevatedButton(
                   onPressed: _recuperarCep,
                   child: Text("Buscar CEP"),
